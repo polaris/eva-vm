@@ -11,7 +11,7 @@ struct EvaValue {
 };
 
 inline EvaValue Number(double value) {
-  return {EvaValueType::Number, .number = value};
+  return {.type = EvaValueType::Number, .number = value};
 }
 
 #endif  // EVAVALUE_H
