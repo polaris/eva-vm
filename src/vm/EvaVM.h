@@ -20,9 +20,11 @@ class EvaVM {
 
   EvaValue exec(const std::string& program);
 
+ private:
   EvaValue eval();
 
- private:
+  EvaValue add();
+
   inline uint8_t readByte() { return *ip++; }
 
   inline EvaValue getConst() {
