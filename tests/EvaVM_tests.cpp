@@ -5,5 +5,5 @@
 TEST_CASE("Code is executed", "[exec]") {
   EvaVM vm;
   const auto result = vm.exec(R"(42)");
-  REQUIRE(result.number == 42);
+  REQUIRE(asNumber(result) == 42);
 }

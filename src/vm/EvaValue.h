@@ -14,4 +14,8 @@ inline EvaValue Number(double value) {
   return {.type = EvaValueType::Number, .number = value};
 }
 
+inline double asNumber(const EvaValue &value) {
+  return value.number;
+}
+
 #endif  // EVAVALUE_H
