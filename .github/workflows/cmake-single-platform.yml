@@ -2,9 +2,9 @@ name: On push to main
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   BUILD_TYPE: Release
@@ -14,10 +14,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      - name: Install Conan
+        uses: turtlebrowser/get-conan@main
 
-    - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      - name: Conan - Detect profile
+        run: conan profile detect --force
+
+      - name: Conan - Install requirements
+        run: conan install . --output-folder=${{github.workspace}}/build --build=missing
+
+      - name: CMake - Configuration
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+      - name: CMake - Build
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
