@@ -1,5 +1,8 @@
 #include "EvaVM.h"
 
+#include <functional>
+#include <unordered_map>
+
 EvaValue EvaVM::exec([[maybe_unused]] const std::string& program) {
   // auto ast = parser->parse(program);
   // code = compiler->compile(ast);
