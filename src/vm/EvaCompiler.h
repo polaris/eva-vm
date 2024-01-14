@@ -22,19 +22,21 @@ class EvaCompiler {
   void gen(const Exp& exp) {
     switch (exp.type) {
       case ExpType::NUMBER:
-        emit(to_uint8(OpCode::OP_CONST));
-        emit(numericConstIdx(exp.number));
+        emitConst(exp.number);
         break;
       case ExpType::STRING:
-        emit(to_uint8(OpCode::OP_CONST));
-        emit(stringConstIdx(exp.string));
+        emitConst(exp.string);
         break;
     }
   }
 
-  void emit(uint8_t oc) { co->code.push_back(oc); }
+  template <typename T>
+  void emitConst(const T& value) {
+    emit(to_uint8(OpCode::OP_CONST));
+    emit(constIdx(value));
+  }
 
-  size_t numericConstIdx(double value) {
+  size_t constIdx(double value) {
     for (std::size_t i = 0; i < co->constants.size(); ++i) {
       if (isNumber(co->constants[i]) && asNumber(co->constants[i]) == value) {
         return i;
@@ -44,7 +46,7 @@ class EvaCompiler {
     return co->constants.size() - 1;
   }
 
-  size_t stringConstIdx(const std::string& value) {
+  size_t constIdx(const std::string& value) {
     for (std::size_t i = 0; i < co->constants.size(); ++i) {
       if (isString(co->constants[i]) &&
           asCppString(co->constants[i]) == value) {
@@ -54,6 +56,8 @@ class EvaCompiler {
     co->constants.push_back(allocString(value));
     return co->constants.size() - 1;
   }
+
+  void emit(uint8_t oc) { co->code.push_back(oc); }
 
   CodeObject* co;
 };
