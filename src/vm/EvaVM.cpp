@@ -3,16 +3,21 @@
 #include <functional>
 #include <unordered_map>
 
+EvaVM::EvaVM()
+    : parser(std::make_unique<syntax::EvaParser>()),
+      compiler(std::make_unique<EvaCompiler>()) {}
+
 EvaValue EvaVM::exec([[maybe_unused]] const std::string& program) {
-  // auto ast = parser->parse(program);
-  // code = compiler->compile(ast);
+  const auto ast = parser->parse(program);
 
-  constants.push_back(AllocString("Hello, "));
-  constants.push_back(AllocString("World!"));
+  co = compiler->compile(ast);
 
-  code = {to_uint8(OpCode::OP_CONST),  0,
-          to_uint8(OpCode::OP_CONST),  1,
-          to_uint8(OpCode::OP_CONCAT), to_uint8(OpCode::OP_HALT)};
+  // constants.push_back(AllocString("Hello, "));
+  // constants.push_back(AllocString("World!"));
+
+  // code = {to_uint8(OpCode::OP_CONST),  0,
+  //         to_uint8(OpCode::OP_CONST),  1,
+  //         to_uint8(OpCode::OP_CONCAT), to_uint8(OpCode::OP_HALT)};
 
   // constants.push_back(Number(120));
   // constants.push_back(Number(100));
@@ -36,7 +41,7 @@ EvaValue EvaVM::exec([[maybe_unused]] const std::string& program) {
   //         to_uint8(OpCode::OP_DIV),
   //         to_uint8(OpCode::OP_HALT)};
 
-  ip = &code[0];
+  ip = &co->code[0];
 
   sp = &stack[0];
 
