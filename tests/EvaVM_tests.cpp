@@ -2,8 +2,14 @@
 
 #include "../src/vm/EvaVM.h"
 
-TEST_CASE("Code is executed", "[exec]") {
+TEST_CASE("Number expression", "[exec]") {
   EvaVM vm;
   const auto result = vm.exec(R"(42)");
   REQUIRE(asNumber(result) == 42);
+}
+
+TEST_CASE("String expression", "[exec]") {
+  EvaVM vm;
+  const auto result = vm.exec(R"("hello")");
+  REQUIRE(asCppString(result) == "hello");
 }
