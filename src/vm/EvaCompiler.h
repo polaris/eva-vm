@@ -1,6 +1,8 @@
 #ifndef EVACOMPILER_H
 #define EVACOMPILER_H
 
+#include <string>
+
 #include "EvaParser.h"
 #include "EvaValue.h"
 #include "OpCode.h"
