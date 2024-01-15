@@ -29,7 +29,32 @@ class EvaCompiler {
       case ExpType::STRING:
         emitConst(exp.string);
         break;
+      case ExpType::LIST:
+        const auto tag = exp.list[0];
+        if (tag.type == ExpType::SYMBOL) {
+          const auto op = tag.string;
+          if (op == "+") {
+            if (exp.list[1].type == ExpType::NUMBER) {
+              genBinaryOp(exp, OpCode::OP_ADD);
+            } else {
+              genBinaryOp(exp, OpCode::OP_CONCAT);
+            }
+          } else if (op == "-") {
+            genBinaryOp(exp, OpCode::OP_SUB);
+          } else if (op == "*") {
+            genBinaryOp(exp, OpCode::OP_MUL);
+          } else if (op == "/") {
+            genBinaryOp(exp, OpCode::OP_DIV);
+          }
+        }
+        break;
     }
+  }
+
+  void genBinaryOp(const Exp& exp, OpCode oc) {
+    gen(exp.list[1]);
+    gen(exp.list[2]);
+    emit(to_uint8(oc));
   }
 
   template <typename T>

@@ -7,7 +7,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     EvaVM vm;
     const auto result = vm.exec(R"(
 
-      3
+      (+ 39 3)
 
     )");
     std::cout << asNumber(result) << "\n";
