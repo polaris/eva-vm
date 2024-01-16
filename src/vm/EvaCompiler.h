@@ -24,10 +24,10 @@ class EvaCompiler {
   void gen(const Exp& exp) {
     switch (exp.type) {
       case ExpType::NUMBER:
-        emitConst(exp.number);
+        genConst(exp.number);
         break;
       case ExpType::STRING:
-        emitConst(exp.string);
+        genConst(exp.string);
         break;
       case ExpType::LIST:
         const auto tag = exp.list[0];
@@ -58,7 +58,7 @@ class EvaCompiler {
   }
 
   template <typename T>
-  void emitConst(const T& value) {
+  void genConst(const T& value) {
     emit(to_uint8(OpCode::OP_CONST));
     emit(constIdx(value));
   }

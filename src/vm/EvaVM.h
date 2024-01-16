@@ -12,7 +12,6 @@
 #include "EvaValue.h"
 #include "OpCode.h"
 #include "StackOverflow.h"
-#include "UnknowOpcode.h"
 
 #define STACK_LIMIT 512
 

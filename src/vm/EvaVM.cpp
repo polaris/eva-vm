@@ -3,6 +3,8 @@
 #include <functional>
 #include <unordered_map>
 
+#include "UnknowOpcode.h"
+
 EvaVM::EvaVM()
     : parser(std::make_unique<syntax::EvaParser>()),
       compiler(std::make_unique<EvaCompiler>()) {}

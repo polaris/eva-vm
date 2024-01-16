@@ -1,7 +1,10 @@
 #ifndef EVAVALUE_H
 #define EVAVALUE_H
 
+#include <ostream>
 #include <string>
+
+#include "UnknownType.h"
 
 enum class EvaValueType { Number, Object };
 
@@ -20,15 +23,23 @@ enum class ObjectType { String, Code };
 struct Object {
   Object(ObjectType t) : type(t) {}
   ObjectType type;
+
+  virtual void print(std::ostream& os) = 0;
 };
 
 struct StringObject : public Object {
   StringObject(const std::string& s) : Object(ObjectType::String), string(s) {}
+  virtual ~StringObject() {}
   std::string string;
+
+  void print(std::ostream& os) override { os << string; }
 };
 
 struct CodeObject : public Object {
   CodeObject(const std::string& name) : Object(ObjectType::Code), name(name) {}
+  virtual ~CodeObject() {}
+
+  void print(std::ostream& os) override { os << name; }
 
   std::string name;
   std::vector<uint8_t> code;
@@ -87,6 +98,39 @@ inline bool isCode(const EvaValue& value) {
 
 inline CodeObject* asCode(const EvaValue& value) {
   return (CodeObject*)value.object;
+}
+
+static std::string evaValueToTypeString(const EvaValue& evaValue) {
+  if (isNumber(evaValue)) {
+    return "NUMBER";
+  } else if (isString(evaValue)) {
+    return "STRING";
+  } else if (isCode(evaValue)) {
+    return "CODE";
+  } else {
+    throw UnknownType(static_cast<int>(evaValue.type));
+  }
+}
+
+static std::string evaValueToConstantString(const EvaValue& evaValue) {
+  std::stringstream ss;
+  if (isNumber(evaValue)) {
+    ss << asNumber(evaValue);
+  } else if (isString(evaValue)) {
+    ss << '"' << asCppString(evaValue) << '"';
+  } else if (isCode(evaValue)) {
+    auto code = asCode(evaValue);
+    ss << "code " << code << ": " << code->name;
+  } else {
+    throw UnknownType(static_cast<int>(evaValue.type));
+  }
+  return ss.str();
+}
+
+static std::ostream& operator<<(std::ostream& os, const EvaValue& evaValue) {
+  os << "EvaValue(" << evaValueToTypeString(evaValue)
+     << "): " << evaValueToConstantString(evaValue);
+  return os;
 }
 
 #endif  // EVAVALUE_H

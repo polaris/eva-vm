@@ -7,10 +7,10 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     EvaVM vm;
     const auto result = vm.exec(R"(
 
-      (+ 39 3)
+      (+ "Hello, " "world!")
 
     )");
-    std::cout << asNumber(result) << "\n";
+    std::cout << result << "\n";
     std::cout << "All done!\n";
   } catch (const std::exception& ex) {
     std::cerr << "Error: " << ex.what() << "\n";
