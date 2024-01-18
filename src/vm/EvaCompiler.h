@@ -29,6 +29,12 @@ class EvaCompiler {
       case ExpType::STRING:
         genConst(exp.string);
         break;
+      case ExpType::SYMBOL:
+        if (exp.string == "true" || exp.string == "false") {
+          emit(to_uint8(OpCode::OP_CONST));
+          emit(constIdx(exp.string == "true" ? true : false));
+        }
+        break;
       case ExpType::LIST:
         const auto tag = exp.list[0];
         if (tag.type == ExpType::SYMBOL) {
@@ -61,6 +67,27 @@ class EvaCompiler {
   void genConst(const T& value) {
     emit(to_uint8(OpCode::OP_CONST));
     emit(constIdx(value));
+  }
+
+  size_t constIdx(bool value) {
+    for (std::size_t i = 0; i < co->constants.size(); ++i) {
+      if (isBoolean(co->constants[i]) && asBoolean(co->constants[i]) == value) {
+        return i;
+      }
+    }
+    co->constants.push_back(Boolean(value));
+    return co->constants.size() - 1;
+  }
+
+  size_t constIdx(int value) {
+    for (std::size_t i = 0; i < co->constants.size(); ++i) {
+      if (isNumber(co->constants[i]) &&
+          static_cast<int>(asNumber(co->constants[i])) == value) {
+        return i;
+      }
+    }
+    co->constants.push_back(Number(static_cast<double>(value)));
+    return co->constants.size() - 1;
   }
 
   size_t constIdx(double value) {

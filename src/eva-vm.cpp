@@ -7,7 +7,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     EvaVM vm;
     const auto result = vm.exec(R"(
 
-      (+ "Hello, " "world!")
+      true
 
     )");
     std::cout << result << "\n";

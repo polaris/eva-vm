@@ -6,13 +6,14 @@
 
 #include "UnknownType.h"
 
-enum class EvaValueType { Number, Object };
+enum class EvaValueType { Boolean, Number, Object };
 
 struct Object;
 
 struct EvaValue {
   EvaValueType type;
   union {
+    bool boolean;
     double number;
     Object* object;
   };
@@ -45,6 +46,16 @@ struct CodeObject : public Object {
   std::vector<uint8_t> code;
   std::vector<EvaValue> constants;
 };
+
+inline EvaValue Boolean(bool value) {
+  return {.type = EvaValueType::Boolean, .boolean = value};
+}
+
+inline bool isBoolean(const EvaValue& value) {
+  return value.type == EvaValueType::Boolean;
+}
+
+inline bool asBoolean(const EvaValue& value) { return value.boolean; }
 
 inline EvaValue Number(double value) {
   return {.type = EvaValueType::Number, .number = value};
@@ -101,7 +112,9 @@ inline CodeObject* asCode(const EvaValue& value) {
 }
 
 static std::string evaValueToTypeString(const EvaValue& evaValue) {
-  if (isNumber(evaValue)) {
+  if (isBoolean(evaValue)) {
+    return "BOOLEAN";
+  } else if (isNumber(evaValue)) {
     return "NUMBER";
   } else if (isString(evaValue)) {
     return "STRING";
@@ -114,7 +127,9 @@ static std::string evaValueToTypeString(const EvaValue& evaValue) {
 
 static std::string evaValueToConstantString(const EvaValue& evaValue) {
   std::stringstream ss;
-  if (isNumber(evaValue)) {
+  if (isBoolean(evaValue)) {
+    ss << ((asBoolean(evaValue) == true) ? "true" : "false");
+  } else if (isNumber(evaValue)) {
     ss << asNumber(evaValue);
   } else if (isString(evaValue)) {
     ss << '"' << asCppString(evaValue) << '"';
