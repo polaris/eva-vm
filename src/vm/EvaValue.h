@@ -142,7 +142,7 @@ static std::string evaValueToConstantString(const EvaValue& evaValue) {
   return ss.str();
 }
 
-static std::ostream& operator<<(std::ostream& os, const EvaValue& evaValue) {
+inline std::ostream& operator<<(std::ostream& os, const EvaValue& evaValue) {
   os << "EvaValue(" << evaValueToTypeString(evaValue)
      << "): " << evaValueToConstantString(evaValue);
   return os;
