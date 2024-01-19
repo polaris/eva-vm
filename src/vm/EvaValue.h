@@ -85,7 +85,7 @@ inline bool isString(const EvaValue& value) {
   return isObjectType(value, ObjectType::String);
 }
 
-inline void DeallocString(const EvaValue& value) {
+inline void deallocString(const EvaValue& value) {
   if (isString(value)) {
     delete ((StringObject*)value.object);
   }
