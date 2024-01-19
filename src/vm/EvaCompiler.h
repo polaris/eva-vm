@@ -1,6 +1,7 @@
 #ifndef EVACOMPILER_H
 #define EVACOMPILER_H
 
+#include <map>
 #include <string>
 
 #include "EvaParser.h"
@@ -51,6 +52,11 @@ class EvaCompiler {
             genBinaryOp(exp, OpCode::OP_MUL);
           } else if (op == "/") {
             genBinaryOp(exp, OpCode::OP_DIV);
+          } else if (compareOps.count(op) != 0) {
+            gen(exp.list[1]);
+            gen(exp.list[2]);
+            emit(to_uint8(OpCode::OP_COMPARE));
+            emit(compareOps[op]);
           }
         }
         break;
@@ -114,6 +120,8 @@ class EvaCompiler {
   void emit(uint8_t oc) { co->code.push_back(oc); }
 
   CodeObject* co;
+
+  static std::map<std::string, uint8_t> compareOps;
 };
 
 #endif  // EVACOMPILER_H

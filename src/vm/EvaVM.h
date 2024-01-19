@@ -32,6 +32,47 @@ class EvaVM {
     push(Number(op(op1, op2)));
   }
 
+  void compareOp() {
+    const auto op = readByte();
+    const auto op2 = pop();
+    const auto op1 = pop();
+    if (isNumber(op1) && isNumber(op2)) {
+      const auto v1 = asNumber(op1);
+      const auto v2 = asNumber(op2);
+      compareValues(op, v1, v2);
+    } else if (isString(op1) && isString(op2)) {
+      const auto s1 = asCppString(op1);
+      const auto s2 = asCppString(op2);
+      compareValues(op, s1, s2);
+    }
+  }
+
+  template <typename T>
+  void compareValues(uint8_t op, T v1, T v2) {
+    bool result;
+    switch (op) {
+      case 0:
+        result = v1 < v2;
+        break;
+      case 1:
+        result = v1 > v2;
+        break;
+      case 2:
+        result = v1 == v2;
+        break;
+      case 3:
+        result = v1 >= v2;
+        break;
+      case 4:
+        result = v1 <= v2;
+        break;
+      case 5:
+        result = v1 != v2;
+        break;
+    }
+    push(Boolean(result));
+  }
+
   void concat() {
     const auto op2 = asCppString(pop());
     const auto op1 = asCppString(pop());

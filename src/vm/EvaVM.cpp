@@ -58,6 +58,7 @@ EvaValue EvaVM::eval() {
       {OpCode::OP_SUB, [this] { binaryOp(std::minus<>()); }},
       {OpCode::OP_MUL, [this] { binaryOp(std::multiplies<>()); }},
       {OpCode::OP_DIV, [this] { binaryOp(std::divides<>()); }},
+      {OpCode::OP_COMPARE, [this] { compareOp(); }},
   };
 
   for (;;) {

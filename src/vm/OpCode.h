@@ -10,7 +10,8 @@ enum class OpCode : uint8_t {
   OP_SUB = 0x03,
   OP_MUL = 0x04,
   OP_DIV = 0x05,
-  OP_CONCAT = 0x06
+  OP_CONCAT = 0x06,
+  OP_COMPARE = 0x07,
 };
 
 inline uint8_t to_uint8(OpCode op) { return static_cast<uint8_t>(op); }
