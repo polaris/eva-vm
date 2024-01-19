@@ -25,3 +25,15 @@ TEST_CASE("Concatenate string expression", "[exec]") {
   const auto result = vm.exec(R"( (+ "Hello, " "world!") )");
   REQUIRE(asCppString(result) == "Hello, world!");
 }
+
+TEST_CASE("Boolean expression - true", "[exec]") {
+  EvaVM vm;
+  const auto result = vm.exec(R"(true)");
+  REQUIRE(asBoolean(result) == true);
+}
+
+TEST_CASE("Boolean expression - false", "[exec]") {
+  EvaVM vm;
+  const auto result = vm.exec(R"(false)");
+  REQUIRE(asBoolean(result) == false);
+}

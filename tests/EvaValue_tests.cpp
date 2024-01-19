@@ -67,3 +67,22 @@ TEST_CASE("Object test", "[EvaValue]") {
   REQUIRE(isObject(n) == false);
   DeallocString(s);
 }
+
+TEST_CASE("Boolean construction", "[EvaValue]") {
+  const EvaValue b = Boolean(1.0);
+  REQUIRE(isBoolean(b) == true);
+  REQUIRE(asBoolean(b) == 1.0);
+}
+
+TEST_CASE("Boolean accessor", "[EvaValue]") {
+  const EvaValue b = Boolean(1.0);
+  REQUIRE(asBoolean(b) == 1.0);
+}
+
+TEST_CASE("Boolean test", "[EvaValue]") {
+  const EvaValue b = Boolean(1.0);
+  const EvaValue s = allocString("foobar");
+  REQUIRE(isBoolean(b) == true);
+  REQUIRE(isBoolean(s) == false);
+  DeallocString(s);
+}
