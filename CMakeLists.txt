@@ -4,7 +4,7 @@ project(eva-vm)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_compile_options(-Wall -Wextra -Wpedantic -ggdb3)
+add_compile_options(-Wall -Wextra -Wpedantic -O0 -g)
 
 set(SOURCE_FILES src/vm/EvaVM.cpp src/vm/EvaCompiler.cpp src/vm/EvaParser.cpp)
 
