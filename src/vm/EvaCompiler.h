@@ -18,14 +18,6 @@ class EvaCompiler {
  private:
   void gen(const Exp& exp);
 
-  void genList(const Exp& exp);
-
-  void genSymbol(const Exp& exp);
-
-  void genCompareOp(const Exp& exp, const std::string& op);
-
-  void genBinaryOp(const Exp& exp, OpCode oc);
-
   template <typename T>
   void genConst(const T& value);
 
@@ -34,6 +26,14 @@ class EvaCompiler {
 
   template <>
   size_t constIdx<int>(const int& value);
+
+  void genSymbol(const Exp& exp);
+
+  void genList(const Exp& exp);
+
+  void genBinaryOp(const Exp& exp, OpCode oc);
+
+  void genCompareOp(const Exp& exp, const std::string& op);
 
   void emit(uint8_t oc);
 

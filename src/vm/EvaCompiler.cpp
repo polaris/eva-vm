@@ -32,6 +32,36 @@ void EvaCompiler::gen(const Exp& exp) {
   }
 }
 
+template <typename T>
+void EvaCompiler::genConst(const T& value) {
+  emit(to_uint8(OpCode::Const));
+  emit(constIdx(value));
+}
+
+template <typename T>
+size_t EvaCompiler::constIdx(const T& value) {
+  const EvaValue evaValue(value);
+  const auto it =
+      std::find(co->constants.begin(), co->constants.end(), evaValue);
+  if (it != co->constants.end()) {
+    return std::distance(co->constants.begin(), it);
+  }
+  co->constants.push_back(evaValue);
+  return co->constants.size() - 1;
+}
+
+template <>
+size_t EvaCompiler::constIdx<int>(const int& value) {
+  return constIdx(static_cast<double>(value));
+}
+
+void EvaCompiler::genSymbol(const Exp& exp) {
+  if (exp.string == "true" || exp.string == "false") {
+    emit(to_uint8(OpCode::Const));
+    emit(constIdx(exp.string == "true" ? true : false));
+  }
+}
+
 void EvaCompiler::genList(const Exp& exp) {
   const auto tag = exp.list[0];
   if (tag.type == ExpType::SYMBOL) {
@@ -54,11 +84,10 @@ void EvaCompiler::genList(const Exp& exp) {
   }
 }
 
-void EvaCompiler::genSymbol(const Exp& exp) {
-  if (exp.string == "true" || exp.string == "false") {
-    emit(to_uint8(OpCode::Const));
-    emit(constIdx(exp.string == "true" ? true : false));
-  }
+void EvaCompiler::genBinaryOp(const Exp& exp, OpCode oc) {
+  gen(exp.list[1]);
+  gen(exp.list[2]);
+  emit(to_uint8(oc));
 }
 
 void EvaCompiler::genCompareOp(const Exp& exp, const std::string& op) {
@@ -66,34 +95,6 @@ void EvaCompiler::genCompareOp(const Exp& exp, const std::string& op) {
   gen(exp.list[2]);
   emit(to_uint8(OpCode::Compare));
   emit(compareOps[op]);
-}
-
-void EvaCompiler::genBinaryOp(const Exp& exp, OpCode oc) {
-  gen(exp.list[1]);
-  gen(exp.list[2]);
-  emit(to_uint8(oc));
-}
-
-template <typename T>
-void EvaCompiler::genConst(const T& value) {
-  emit(to_uint8(OpCode::Const));
-  emit(constIdx(value));
-}
-
-template <typename T>
-size_t EvaCompiler::constIdx(const T& value) {
-  const EvaValue evaValue(value);
-  const auto it = std::find(co->constants.begin(), co->constants.end(), evaValue);
-  if (it != co->constants.end()) {
-    return std::distance(co->constants.begin(), it);
-  }
-  co->constants.push_back(evaValue);
-  return co->constants.size() - 1;
-}
-
-template <>
-size_t EvaCompiler::constIdx<int>(const int& value) {
-  return constIdx(static_cast<double>(value));
 }
 
 void EvaCompiler::emit(uint8_t oc) { co->code.push_back(oc); }
