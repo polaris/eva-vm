@@ -16,7 +16,7 @@ class EvaCompiler {
     co = asCode(allocCode("main"));
 
     gen(exp);
-    emit(to_uint8(OpCode::OP_HALT));
+    emit(to_uint8(OpCode::Halt));
 
     return co;
   }
@@ -32,7 +32,7 @@ class EvaCompiler {
         break;
       case ExpType::SYMBOL:
         if (exp.string == "true" || exp.string == "false") {
-          emit(to_uint8(OpCode::OP_CONST));
+          emit(to_uint8(OpCode::Const));
           emit(constIdx(exp.string == "true" ? true : false));
         }
         break;
@@ -42,20 +42,20 @@ class EvaCompiler {
           const auto op = tag.string;
           if (op == "+") {
             if (exp.list[1].type == ExpType::NUMBER) {
-              genBinaryOp(exp, OpCode::OP_ADD);
+              genBinaryOp(exp, OpCode::Add);
             } else {
-              genBinaryOp(exp, OpCode::OP_CONCAT);
+              genBinaryOp(exp, OpCode::Concat);
             }
           } else if (op == "-") {
-            genBinaryOp(exp, OpCode::OP_SUB);
+            genBinaryOp(exp, OpCode::Sub);
           } else if (op == "*") {
-            genBinaryOp(exp, OpCode::OP_MUL);
+            genBinaryOp(exp, OpCode::Mul);
           } else if (op == "/") {
-            genBinaryOp(exp, OpCode::OP_DIV);
+            genBinaryOp(exp, OpCode::Div);
           } else if (compareOps.count(op) != 0) {
             gen(exp.list[1]);
             gen(exp.list[2]);
-            emit(to_uint8(OpCode::OP_COMPARE));
+            emit(to_uint8(OpCode::Compare));
             emit(compareOps[op]);
           }
         }
@@ -71,7 +71,7 @@ class EvaCompiler {
 
   template <typename T>
   void genConst(const T& value) {
-    emit(to_uint8(OpCode::OP_CONST));
+    emit(to_uint8(OpCode::Const));
     emit(constIdx(value));
   }
 
