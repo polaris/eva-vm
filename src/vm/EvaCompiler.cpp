@@ -1,5 +1,7 @@
 #include "EvaCompiler.h"
 
+#include <algorithm>
+
 std::map<std::string, uint8_t> EvaCompiler::compareOps = {
     {"<", 0}, {">", 1}, {"==", 2}, {">=", 3}, {"<=", 4}, {"!=", 5},
 };
@@ -81,10 +83,9 @@ void EvaCompiler::genConst(const T& value) {
 template <typename T>
 size_t EvaCompiler::constIdx(const T& value) {
   const EvaValue evaValue(value);
-  for (std::size_t i = 0; i < co->constants.size(); ++i) {
-    if (co->constants[i] == evaValue) {
-      return i;
-    }
+  const auto it = std::find(co->constants.begin(), co->constants.end(), evaValue);
+  if (it != co->constants.end()) {
+    return std::distance(co->constants.begin(), it);
   }
   co->constants.push_back(evaValue);
   return co->constants.size() - 1;
