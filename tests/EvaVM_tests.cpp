@@ -17,13 +17,13 @@ TEST_CASE("Add number expression", "[exec]") {
 TEST_CASE("String expression", "[exec]") {
   EvaVM vm;
   const auto result = vm.exec(R"("hello")");
-  REQUIRE(asCppString(result) == "hello");
+  REQUIRE(asString(result) == "hello");
 }
 
 TEST_CASE("Concatenate string expression", "[exec]") {
   EvaVM vm;
   const auto result = vm.exec(R"( (+ "Hello, " "world!") )");
-  REQUIRE(asCppString(result) == "Hello, world!");
+  REQUIRE(asString(result) == "Hello, world!");
 }
 
 TEST_CASE("Boolean expression - true", "[exec]") {

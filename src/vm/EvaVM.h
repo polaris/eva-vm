@@ -2,6 +2,7 @@
 #define EVAVM_H
 
 #include <array>
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -10,7 +11,6 @@
 #include "EvaCompiler.h"
 #include "EvaParser.h"
 #include "EvaValue.h"
-#include "OpCode.h"
 #include "StackOverflow.h"
 
 #define STACK_LIMIT 512
@@ -29,7 +29,7 @@ class EvaVM {
   void binaryOp(Operation op) {
     const auto op2 = asNumber(pop());
     const auto op1 = asNumber(pop());
-    push(Number(op(op1, op2)));
+    push(op(op1, op2));
   }
 
   void compareOp() {
@@ -41,42 +41,27 @@ class EvaVM {
       const auto v2 = asNumber(op2);
       compareValues(op, v1, v2);
     } else if (isString(op1) && isString(op2)) {
-      const auto s1 = asCppString(op1);
-      const auto s2 = asCppString(op2);
+      const auto s1 = asString(op1);
+      const auto s2 = asString(op2);
       compareValues(op, s1, s2);
     }
   }
 
   template <typename T>
-  void compareValues(uint8_t op, T v1, T v2) {
-    bool result;
-    switch (op) {
-      case 0:
-        result = v1 < v2;
-        break;
-      case 1:
-        result = v1 > v2;
-        break;
-      case 2:
-        result = v1 == v2;
-        break;
-      case 3:
-        result = v1 >= v2;
-        break;
-      case 4:
-        result = v1 <= v2;
-        break;
-      case 5:
-        result = v1 != v2;
-        break;
+  void compareValues(uint8_t op, const T& v1, const T& v2) {
+    static const std::function<bool(T, T)> compareFuncs[] = {
+        std::less<T>(),          std::greater<T>(),    std::equal_to<T>(),
+        std::greater_equal<T>(), std::less_equal<T>(), std::not_equal_to<T>()};
+    if (op >= std::size(compareFuncs)) {
+      throw std::invalid_argument("Invalid comparison operation");
     }
-    push(Boolean(result));
+    push(compareFuncs[op](v1, v2));
   }
 
   void concat() {
-    const auto op2 = asCppString(pop());
-    const auto op1 = asCppString(pop());
-    push(allocString(op1 + op2));
+    const auto op2 = asString(pop());
+    const auto op1 = asString(pop());
+    push(EvaValue(op1 + op2));
   }
 
   inline uint8_t readByte() { return *ip++; }

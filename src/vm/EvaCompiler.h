@@ -2,6 +2,7 @@
 #define EVACOMPILER_H
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "EvaParser.h"
@@ -17,6 +18,10 @@ class EvaCompiler {
  private:
   void gen(const Exp& exp);
 
+  void genList(const Exp& exp);
+
+  void genSymbol(const Exp& exp);
+
   void genCompareOp(const Exp& exp, const std::string& op);
 
   void genBinaryOp(const Exp& exp, OpCode oc);
@@ -24,17 +29,15 @@ class EvaCompiler {
   template <typename T>
   void genConst(const T& value);
 
-  size_t constIdx(bool value);
+  template <typename T>
+  size_t constIdx(const T& value);
 
-  size_t constIdx(int value);
-
-  size_t constIdx(double value);
-
-  size_t constIdx(const std::string& value);
+  template <>
+  size_t constIdx<int>(const int& value);
 
   void emit(uint8_t oc);
 
-  CodeObject* co;
+  std::shared_ptr<CodeObject> co;
 
   static std::map<std::string, uint8_t> compareOps;
 };

@@ -7,10 +7,10 @@ std::map<std::string, uint8_t> EvaCompiler::compareOps = {
 EvaCompiler::EvaCompiler() {}
 
 CodeObject* EvaCompiler::compile(const Exp& exp) {
-  co = asCode(allocCode("main"));
+  co = std::make_shared<CodeObject>("main");
   gen(exp);
   emit(to_uint8(OpCode::Halt));
-  return co;
+  return co.get();
 }
 
 void EvaCompiler::gen(const Exp& exp) {
@@ -22,32 +22,40 @@ void EvaCompiler::gen(const Exp& exp) {
       genConst(exp.string);
       break;
     case ExpType::SYMBOL:
-      if (exp.string == "true" || exp.string == "false") {
-        emit(to_uint8(OpCode::Const));
-        emit(constIdx(exp.string == "true" ? true : false));
-      }
+      genSymbol(exp);
       break;
     case ExpType::LIST:
-      const auto tag = exp.list[0];
-      if (tag.type == ExpType::SYMBOL) {
-        const auto op = tag.string;
-        if (op == "+") {
-          if (exp.list[1].type == ExpType::NUMBER) {
-            genBinaryOp(exp, OpCode::Add);
-          } else {
-            genBinaryOp(exp, OpCode::Concat);
-          }
-        } else if (op == "-") {
-          genBinaryOp(exp, OpCode::Sub);
-        } else if (op == "*") {
-          genBinaryOp(exp, OpCode::Mul);
-        } else if (op == "/") {
-          genBinaryOp(exp, OpCode::Div);
-        } else if (compareOps.count(op) != 0) {
-          genCompareOp(exp, op);
-        }
-      }
+      genList(exp);
       break;
+  }
+}
+
+void EvaCompiler::genList(const Exp& exp) {
+  const auto tag = exp.list[0];
+  if (tag.type == ExpType::SYMBOL) {
+    const auto op = tag.string;
+    if (op == "+") {
+      if (exp.list[1].type == ExpType::NUMBER) {
+        genBinaryOp(exp, OpCode::Add);
+      } else {
+        genBinaryOp(exp, OpCode::Concat);
+      }
+    } else if (op == "-") {
+      genBinaryOp(exp, OpCode::Sub);
+    } else if (op == "*") {
+      genBinaryOp(exp, OpCode::Mul);
+    } else if (op == "/") {
+      genBinaryOp(exp, OpCode::Div);
+    } else if (compareOps.count(op) != 0) {
+      genCompareOp(exp, op);
+    }
+  }
+}
+
+void EvaCompiler::genSymbol(const Exp& exp) {
+  if (exp.string == "true" || exp.string == "false") {
+    emit(to_uint8(OpCode::Const));
+    emit(constIdx(exp.string == "true" ? true : false));
   }
 }
 
@@ -70,45 +78,21 @@ void EvaCompiler::genConst(const T& value) {
   emit(constIdx(value));
 }
 
-size_t EvaCompiler::constIdx(bool value) {
+template <typename T>
+size_t EvaCompiler::constIdx(const T& value) {
+  const EvaValue evaValue(value);
   for (std::size_t i = 0; i < co->constants.size(); ++i) {
-    if (isBoolean(co->constants[i]) && asBoolean(co->constants[i]) == value) {
+    if (co->constants[i] == evaValue) {
       return i;
     }
   }
-  co->constants.push_back(Boolean(value));
+  co->constants.push_back(evaValue);
   return co->constants.size() - 1;
 }
 
-size_t EvaCompiler::constIdx(int value) {
-  for (std::size_t i = 0; i < co->constants.size(); ++i) {
-    if (isNumber(co->constants[i]) &&
-        static_cast<int>(asNumber(co->constants[i])) == value) {
-      return i;
-    }
-  }
-  co->constants.push_back(Number(static_cast<double>(value)));
-  return co->constants.size() - 1;
-}
-
-size_t EvaCompiler::constIdx(double value) {
-  for (std::size_t i = 0; i < co->constants.size(); ++i) {
-    if (isNumber(co->constants[i]) && asNumber(co->constants[i]) == value) {
-      return i;
-    }
-  }
-  co->constants.push_back(Number(value));
-  return co->constants.size() - 1;
-}
-
-size_t EvaCompiler::constIdx(const std::string& value) {
-  for (std::size_t i = 0; i < co->constants.size(); ++i) {
-    if (isString(co->constants[i]) && asCppString(co->constants[i]) == value) {
-      return i;
-    }
-  }
-  co->constants.push_back(allocString(value));
-  return co->constants.size() - 1;
+template <>
+size_t EvaCompiler::constIdx<int>(const int& value) {
+  return constIdx(static_cast<double>(value));
 }
 
 void EvaCompiler::emit(uint8_t oc) { co->code.push_back(oc); }
