@@ -121,3 +121,13 @@ TEST_CASE("Inequality expression", "[exec]") {
   const auto result2 = vm.exec(R"( (!= 4 4) )");
   REQUIRE(asBoolean(result2) == false);
 }
+
+TEST_CASE("Complex expression", "[exec]") {
+  EvaVM vm;
+
+  const auto result1 = vm.exec(R"( (< (+ 20 21) (* 2 21)) )");
+  REQUIRE(asBoolean(result1) == true);
+
+  const auto result2 = vm.exec(R"( (!= 4 4) )");
+  REQUIRE(asBoolean(result2) == false);
+}
