@@ -53,14 +53,18 @@ class EvaCompiler {
           } else if (op == "/") {
             genBinaryOp(exp, OpCode::Div);
           } else if (compareOps.count(op) != 0) {
-            gen(exp.list[1]);
-            gen(exp.list[2]);
-            emit(to_uint8(OpCode::Compare));
-            emit(compareOps[op]);
+            genCompareOp(exp, op);
           }
         }
         break;
     }
+  }
+
+  void genCompareOp(const Exp& exp, const std::string& op) {
+    gen(exp.list[1]);
+    gen(exp.list[2]);
+    emit(to_uint8(OpCode::Compare));
+    emit(compareOps[op]);
   }
 
   void genBinaryOp(const Exp& exp, OpCode oc) {
