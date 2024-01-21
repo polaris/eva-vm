@@ -35,6 +35,14 @@ class EvaCompiler {
 
   void genCompareOp(const Exp& exp, const std::string& op);
 
+  void genIfOp(const Exp& exp);
+
+  size_t getOffset() const;
+
+  void writeByteAtOffset(size_t offset, uint8_t value);
+
+  void patchJumpAddress(size_t offset, uint16_t value);
+
   void emit(uint8_t oc);
 
   std::shared_ptr<CodeObject> co;

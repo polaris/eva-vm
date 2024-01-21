@@ -12,6 +12,8 @@ enum class OpCode : uint8_t {
   Div = 0x05,
   Concat = 0x06,
   Compare = 0x07,
+  JmpIfFalse = 0x08,
+  Jmp = 0x09,
 };
 
 inline uint8_t to_uint8(OpCode op) { return static_cast<uint8_t>(op); }

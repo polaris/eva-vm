@@ -80,6 +80,8 @@ void EvaCompiler::genList(const Exp& exp) {
       genBinaryOp(exp, OpCode::Div);
     } else if (compareOps.count(op) != 0) {
       genCompareOp(exp, op);
+    } else if (op == "if") {
+      genIfOp(exp);
     }
   }
 }
@@ -95,6 +97,37 @@ void EvaCompiler::genCompareOp(const Exp& exp, const std::string& op) {
   gen(exp.list[2]);
   emit(to_uint8(OpCode::Compare));
   emit(compareOps[op]);
+}
+
+void EvaCompiler::genIfOp(const Exp& exp) {
+  gen(exp.list[1]);
+  emit(to_uint8(OpCode::JmpIfFalse));
+  emit(0);
+  emit(0);
+  const auto elseJmpAddr = getOffset() - 2;
+  gen(exp.list[2]);
+  emit(to_uint8(OpCode::Jmp));
+  emit(0);
+  emit(0);
+  const auto endAddr = getOffset() - 2;
+  const auto elseBranchAddr = getOffset();
+  patchJumpAddress(elseJmpAddr, elseBranchAddr);
+  if (exp.list.size() == 4) {
+    gen(exp.list[3]);
+  }
+  const auto endBranchAddr = getOffset();
+  patchJumpAddress(endAddr, endBranchAddr);
+}
+
+size_t EvaCompiler::getOffset() const { return co->code.size(); }
+
+void EvaCompiler::writeByteAtOffset(size_t offset, uint8_t value) {
+  co->code[offset] = value;
+}
+
+void EvaCompiler::patchJumpAddress(size_t offset, uint16_t value) {
+  writeByteAtOffset(offset, (value >> 8) & 0xff);
+  writeByteAtOffset(offset + 1, value & 0xff);
 }
 
 void EvaCompiler::emit(uint8_t oc) { co->code.push_back(oc); }

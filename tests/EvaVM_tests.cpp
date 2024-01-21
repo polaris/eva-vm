@@ -131,3 +131,13 @@ TEST_CASE("Complex expression", "[exec]") {
   const auto result2 = vm.exec(R"( (!= 4 4) )");
   REQUIRE(asBoolean(result2) == false);
 }
+
+TEST_CASE("If expression", "[exec]") {
+  EvaVM vm;
+
+  const auto result1 = vm.exec(R"( (if (< 5 10) 1 2) )");
+  REQUIRE(asNumber(result1) == 1);
+
+  const auto result2 = vm.exec(R"( (if (> 5 10) 1 2) )");
+  REQUIRE(asNumber(result2) == 2);
+}

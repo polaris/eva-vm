@@ -25,6 +25,12 @@ class EvaVM {
  private:
   EvaValue eval();
 
+  void handleJmpIfFalse();
+
+  void handleJmp();
+
+  void handleDefault(const OpCode& opcode);
+
   template <typename Operation>
   void binaryOp(Operation op) {
     const auto op2 = asNumber(pop());
@@ -66,6 +72,11 @@ class EvaVM {
 
   inline uint8_t readByte() { return *ip++; }
 
+  inline uint16_t readShort() {
+    ip += 2;
+    return static_cast<uint16_t>((ip[-2] << 8) | ip[-1]);
+  }
+
   inline EvaValue getConst() { return co->constants[readByte()]; }
 
   inline void push(const EvaValue& value) {
@@ -83,6 +94,8 @@ class EvaVM {
     --sp;
     return *sp;
   }
+
+  uint8_t* toAddress(uint16_t index) { return &co->code[index]; }
 
   std::unique_ptr<syntax::EvaParser> parser;
 
