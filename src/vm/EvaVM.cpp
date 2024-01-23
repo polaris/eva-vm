@@ -14,6 +14,7 @@ EvaValue EvaVM::exec([[maybe_unused]] const std::string &program) {
   co = compiler->compile(ast);
   ip = &co->code[0];
   sp = &stack[0];
+  compiler->disassembleByteCode();
   return eval();
 }
 

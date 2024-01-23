@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#include "EvaDisassembler.h"
 #include "EvaParser.h"
 #include "EvaValue.h"
 #include "OpCode.h"
@@ -14,6 +15,8 @@ class EvaCompiler {
   EvaCompiler();
 
   CodeObject* compile(const Exp& exp);
+
+  void disassembleByteCode() { disassembler.disassemble(co.get()); }
 
  private:
   void gen(const Exp& exp);
@@ -46,6 +49,8 @@ class EvaCompiler {
   void emit(uint8_t oc);
 
   std::shared_ptr<CodeObject> co;
+
+  EvaDisassember disassembler;
 
   static std::map<std::string, uint8_t> compareOps;
 };
