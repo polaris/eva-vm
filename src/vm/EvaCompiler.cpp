@@ -74,10 +74,10 @@ void EvaCompiler::genList(const Exp& exp) {
   if (tag.type == ExpType::SYMBOL) {
     const auto op = tag.string;
     if (op == "+") {
-      if (exp.list[1].type == ExpType::NUMBER) {
-        genBinaryOp(exp, OpCode::Add);
-      } else {
+      if (exp.list[1].type == ExpType::STRING) {
         genBinaryOp(exp, OpCode::Concat);
+      } else {
+        genBinaryOp(exp, OpCode::Add);
       }
     } else if (op == "-") {
       genBinaryOp(exp, OpCode::Sub);
