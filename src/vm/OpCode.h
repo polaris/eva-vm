@@ -14,6 +14,8 @@ enum class OpCode : uint8_t {
   Compare = 0x07,
   JmpIfFalse = 0x08,
   Jmp = 0x09,
+  GetGlobal = 0x0a,
+  SetGlobal = 0x0b
 };
 
 inline uint8_t to_uint8(OpCode op) { return static_cast<uint8_t>(op); }
@@ -40,6 +42,10 @@ inline std::string opcodeToString(OpCode opcode) {
       return "JmpIfFalse";
     case OpCode::Jmp:
       return "Jmp";
+    case OpCode::GetGlobal:
+      return "GetGlobal";
+    case OpCode::SetGlobal:
+      return "SetGlobal";
   }
 }
 

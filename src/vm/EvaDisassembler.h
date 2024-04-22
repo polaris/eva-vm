@@ -5,10 +5,13 @@
 #include <sstream>
 
 #include "EvaValue.h"
+#include "Global.h"
 #include "OpCode.h"
 
 class EvaDisassember {
  public:
+  EvaDisassember(std::shared_ptr<Global> global) : global{global} {}
+
   void disassemble(CodeObject* co) {
     std::cout << "\n-------------- Disassembly: " << co->name
               << " --------------\n\n";
@@ -41,6 +44,9 @@ class EvaDisassember {
       case OpCode::JmpIfFalse:
       case OpCode::Jmp:
         return disassembleJump(co, opcode, offset);
+      case OpCode::GetGlobal:
+      case OpCode::SetGlobal:
+        return disassembleGlobal(co, opcode, offset);
       default:
         throw std::runtime_error("Invalid instruction");
     }
@@ -86,6 +92,17 @@ class EvaDisassember {
     return offset + 3;
   }
 
+  size_t disassembleGlobal(CodeObject* co, OpCode opcode, size_t offset) {
+    std::ios_base::fmtflags f(std::cout.flags());
+    dumpBytes(co, offset, 2);
+    printOpCode(opcode);
+    const auto globalIndex = co->code[offset + 1];
+    std::cout << static_cast<int>(globalIndex) << " ("
+              << global->get(globalIndex).name << ")";
+    std::cout.flags(f);
+    return offset + 2;
+  }
+
   void dumpBytes(CodeObject* co, size_t offset, size_t count) {
     std::ios_base::fmtflags f(std::cout.flags());
     std::stringstream ss;
@@ -105,8 +122,11 @@ class EvaDisassember {
   }
 
   uint16_t readWordAtOffset(CodeObject* co, size_t offset) {
-    return static_cast<uint16_t>((co->code[offset] << 8) | co->code[offset + 1]);
+    return static_cast<uint16_t>((co->code[offset] << 8) |
+                                 co->code[offset + 1]);
   }
+
+  std::shared_ptr<Global> global;
 };
 
 #endif

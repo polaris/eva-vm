@@ -6,7 +6,8 @@ std::map<std::string, uint8_t> EvaCompiler::compareOps = {
     {"<", 0}, {">", 1}, {"==", 2}, {">=", 3}, {"<=", 4}, {"!=", 5},
 };
 
-EvaCompiler::EvaCompiler() {}
+EvaCompiler::EvaCompiler(std::shared_ptr<Global> global)
+    : global{global}, disassembler{global} {}
 
 CodeObject* EvaCompiler::compile(const Exp& exp) {
   co = std::make_shared<CodeObject>("main");
@@ -59,6 +60,12 @@ void EvaCompiler::genSymbol(const Exp& exp) {
   if (exp.string == "true" || exp.string == "false") {
     emit(to_uint8(OpCode::Const));
     emit(constIdx(exp.string == "true" ? true : false));
+  } else {
+    if (!global->exists(exp.string)) {
+      throw std::runtime_error("Reference error");
+    }
+    emit(to_uint8(OpCode::GetGlobal));
+    emit(global->getGlobalIndex(exp.string));
   }
 }
 
@@ -82,6 +89,10 @@ void EvaCompiler::genList(const Exp& exp) {
       genCompareOp(exp, op);
     } else if (op == "if") {
       genIfOp(exp);
+    } else if (op == "var") {
+      genVar(exp);
+    } else if (op == "set") {
+      genSet(exp);
     }
   }
 }
@@ -117,6 +128,24 @@ void EvaCompiler::genIfOp(const Exp& exp) {
   }
   const auto endBranchAddr = getOffset();
   patchJumpAddress(endAddr, endBranchAddr);
+}
+
+void EvaCompiler::genVar(const Exp& exp) {
+  const auto name = exp.list[1].string;
+  global->define(name);
+  gen(exp.list[2]);
+  emit(to_uint8(OpCode::SetGlobal));
+  emit(global->getGlobalIndex(name));
+}
+
+void EvaCompiler::genSet(const Exp& exp) {
+  gen(exp.list[2]);
+  const auto globalIndex = global->getGlobalIndex(exp.list[1].string);
+  if (globalIndex == -1) {
+    throw std::runtime_error("Reference error");
+  }
+  emit(to_uint8(OpCode::SetGlobal));
+  emit(globalIndex);
 }
 
 size_t EvaCompiler::getOffset() const { return co->code.size(); }

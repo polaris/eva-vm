@@ -141,3 +141,13 @@ TEST_CASE("If expression", "[exec]") {
   const auto result2 = vm.exec(R"( (if (> 5 10) 1 2) )");
   REQUIRE(asNumber(result2) == 2);
 }
+
+TEST_CASE("Var expression", "[exec]") {
+  EvaVM vm;
+
+  const auto result1 = vm.exec(R"( (var z 123) )");
+  REQUIRE(asNumber(result1) == 123);
+
+  const auto result2 = vm.exec(R"( (var z (/ 123 2)) )");
+  REQUIRE(asNumber(result2) == 61.5);
+}

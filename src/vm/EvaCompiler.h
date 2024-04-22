@@ -8,11 +8,12 @@
 #include "EvaDisassembler.h"
 #include "EvaParser.h"
 #include "EvaValue.h"
+#include "Global.h"
 #include "OpCode.h"
 
 class EvaCompiler {
  public:
-  EvaCompiler();
+  EvaCompiler(std::shared_ptr<Global> global);
 
   CodeObject* compile(const Exp& exp);
 
@@ -34,6 +35,10 @@ class EvaCompiler {
 
   void genList(const Exp& exp);
 
+  void genVar(const Exp& exp);
+
+  void genSet(const Exp& exp);
+
   void genBinaryOp(const Exp& exp, OpCode oc);
 
   void genCompareOp(const Exp& exp, const std::string& op);
@@ -47,6 +52,8 @@ class EvaCompiler {
   void patchJumpAddress(size_t offset, uint16_t value);
 
   void emit(uint8_t oc);
+
+  std::shared_ptr<Global> global;
 
   std::shared_ptr<CodeObject> co;
 

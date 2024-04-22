@@ -11,6 +11,7 @@
 #include "EvaCompiler.h"
 #include "EvaParser.h"
 #include "EvaValue.h"
+#include "Global.h"
 #include "StackOverflow.h"
 
 #define STACK_LIMIT 512
@@ -23,11 +24,17 @@ class EvaVM {
   EvaValue exec(const std::string& program);
 
  private:
+  void setGlobalVariables();
+
   EvaValue eval();
 
   void handleJmpIfFalse();
 
   void handleJmp();
+
+  void handleGetGlobal();
+
+  void handleSetGlobal();
 
   void handleDefault(const OpCode& opcode);
 
@@ -95,9 +102,18 @@ class EvaVM {
     return *sp;
   }
 
+  inline EvaValue peek(size_t offset = 0) {
+    if (sp == stack.begin()) {
+      throw EmptyStack();
+    }
+    return *(sp - 1 - offset);
+  }
+
   uint8_t* toAddress(uint16_t index) { return &co->code[index]; }
 
   std::unique_ptr<syntax::EvaParser> parser;
+
+  std::shared_ptr<Global> global;
 
   std::unique_ptr<EvaCompiler> compiler;
 

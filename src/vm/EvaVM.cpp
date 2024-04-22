@@ -7,7 +7,10 @@
 
 EvaVM::EvaVM()
     : parser(std::make_unique<syntax::EvaParser>()),
-      compiler(std::make_unique<EvaCompiler>()) {}
+      global(std::make_shared<Global>()),
+      compiler(std::make_unique<EvaCompiler>(global)) {
+  setGlobalVariables();
+}
 
 EvaValue EvaVM::exec([[maybe_unused]] const std::string &program) {
   const auto ast = parser->parse(program);
@@ -16,6 +19,10 @@ EvaValue EvaVM::exec([[maybe_unused]] const std::string &program) {
   sp = &stack[0];
   compiler->disassembleByteCode();
   return eval();
+}
+
+void EvaVM::setGlobalVariables() {
+  global->addConst("x", 12.3);
 }
 
 EvaValue EvaVM::eval() {
@@ -29,6 +36,12 @@ EvaValue EvaVM::eval() {
         break;
       case OpCode::Jmp:
         handleJmp();
+        break;
+      case OpCode::GetGlobal:
+        handleGetGlobal();
+        break;
+      case OpCode::SetGlobal:
+        handleSetGlobal();
         break;
       default:
         handleDefault(opcode);
@@ -46,6 +59,17 @@ void EvaVM::handleJmpIfFalse() {
 }
 
 void EvaVM::handleJmp() { ip = toAddress(readShort()); }
+
+void EvaVM::handleGetGlobal() {
+  const auto globalIndex = readByte();
+  push(global->get(globalIndex).value);
+}
+
+void EvaVM::handleSetGlobal() {
+  const auto globalIndex = readByte();
+  const auto value = peek(0);
+  global->set(globalIndex, value);
+}
 
 void EvaVM::handleDefault(const OpCode &opcode) {
   static const std::unordered_map<OpCode, std::function<void()>> operations = {
