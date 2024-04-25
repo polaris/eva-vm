@@ -7,7 +7,11 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     EvaVM vm;
     const auto result = vm.exec(R"(
 
-      (var z (/ 123 2))
+      (var t (begin
+        (var s (+ 1 2))
+        (var u (+ s 2))
+      ))
+      (+ t 1)
 
     )");
     std::cout << result << "\n";

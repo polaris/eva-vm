@@ -36,6 +36,14 @@ class EvaVM {
 
   void handleSetGlobal();
 
+  void handleGetLocal();
+
+  void handleSetLocal();
+
+  void handlePop();
+
+  void handleScopeExit();
+
   void handleDefault(const OpCode& opcode);
 
   template <typename Operation>
@@ -102,6 +110,13 @@ class EvaVM {
     return *sp;
   }
 
+  inline void popN(size_t count) {
+    if (stack.size() == 0) {
+      throw std::runtime_error("Stack empty");
+    }
+    sp -= count;
+  }
+
   inline EvaValue peek(size_t offset = 0) {
     if (sp == stack.begin()) {
       throw EmptyStack();
@@ -124,6 +139,8 @@ class EvaVM {
   std::array<EvaValue, STACK_LIMIT> stack;
 
   EvaValue* sp;
+
+  EvaValue* bp;
 };
 
 #endif  // EVAVM_H

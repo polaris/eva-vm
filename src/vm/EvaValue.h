@@ -14,11 +14,42 @@ struct CodeObject;
 
 using EvaValue = std::variant<bool, double, std::string, CodeObject*>;
 
+struct LocalVar {
+  std::string name;
+  EvaValue value;
+  size_t scopeLevel;
+};
+
 struct CodeObject {
   CodeObject(const std::string& n) : name(n) {}
   std::string name;
   std::vector<uint8_t> code;
   std::vector<EvaValue> constants;
+  size_t scopeLevel = 0;
+  std::vector<LocalVar> locals;
+
+  const LocalVar& get(size_t index) const { return locals[index]; }
+
+  void set(size_t index, const EvaValue& value) {
+    if (index >= locals.size()) {
+      throw std::runtime_error("Local does not exist");
+    }
+    locals[index].value = value;
+  }
+
+  void addLocal(const std::string& name) {
+    locals.push_back({name, EvaValue(0.0), scopeLevel});
+  }
+
+  int getLocalIndex(const std::string& name) {
+    const auto it =
+        std::find_if(locals.begin(), locals.end(),
+                     [&name](const LocalVar& var) { return var.name == name; });
+    if (it != locals.end()) {
+      return std::distance(locals.begin(), it);
+    }
+    return -1;
+  }
 };
 
 inline bool isBoolean(const EvaValue& value) {

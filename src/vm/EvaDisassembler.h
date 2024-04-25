@@ -38,7 +38,10 @@ class EvaDisassember {
       case OpCode::Mul:
       case OpCode::Div:
       case OpCode::Concat:
+      case OpCode::Pop:
         return disassembleSimple(co, opcode, offset);
+      case OpCode::ScopeExit:
+        return disassembleWord(co, opcode, offset);
       case OpCode::Compare:
         return disassembleCompare(co, offset);
       case OpCode::JmpIfFalse:
@@ -47,6 +50,9 @@ class EvaDisassember {
       case OpCode::GetGlobal:
       case OpCode::SetGlobal:
         return disassembleGlobal(co, opcode, offset);
+      case OpCode::GetLocal:
+      case OpCode::SetLocal:
+        return disassembleLocal(co, opcode, offset);
       default:
         throw std::runtime_error("Invalid instruction");
     }
@@ -58,6 +64,13 @@ class EvaDisassember {
     dumpBytes(co, offset, 1);
     printOpCode(opcode);
     return offset + 1;
+  }
+
+  size_t disassembleWord(CodeObject* co, OpCode opcode, size_t offset) {
+    dumpBytes(co, offset, 2);
+    printOpCode(opcode);
+    std::cout << static_cast<int>(co->code[offset + 1]);
+    return offset + 2;
   }
 
   size_t disassembleConst(CodeObject* co, size_t offset) {
@@ -99,6 +112,16 @@ class EvaDisassember {
     const auto globalIndex = co->code[offset + 1];
     std::cout << static_cast<int>(globalIndex) << " ("
               << global->get(globalIndex).name << ")";
+    std::cout.flags(f);
+    return offset + 2;
+  }
+
+  size_t disassembleLocal(CodeObject* co, OpCode opcode, size_t offset) {
+    std::ios_base::fmtflags f(std::cout.flags());
+    dumpBytes(co, offset, 2);
+    printOpCode(opcode);
+    const auto localIndex = co->code[offset + 1];
+    std::cout << static_cast<int>(localIndex);
     std::cout.flags(f);
     return offset + 2;
   }

@@ -61,11 +61,18 @@ void EvaCompiler::genSymbol(const Exp& exp) {
     emit(to_uint8(OpCode::Const));
     emit(constIdx(exp.string == "true" ? true : false));
   } else {
-    if (!global->exists(exp.string)) {
-      throw std::runtime_error("Reference error");
+    const auto name = exp.string;
+    const auto localIndex = co->getLocalIndex(name);
+    if (localIndex != -1) {
+      emit(to_uint8(OpCode::GetLocal));
+      emit(localIndex);
+    } else {
+      if (!global->exists(name)) {
+        throw std::runtime_error("Reference error");
+      }
+      emit(to_uint8(OpCode::GetGlobal));
+      emit(global->getGlobalIndex(name));
     }
-    emit(to_uint8(OpCode::GetGlobal));
-    emit(global->getGlobalIndex(exp.string));
   }
 }
 
@@ -93,6 +100,8 @@ void EvaCompiler::genList(const Exp& exp) {
       genVar(exp);
     } else if (op == "set") {
       genSet(exp);
+    } else if (op == "begin") {
+      genBegin(exp);
     }
   }
 }
@@ -132,20 +141,46 @@ void EvaCompiler::genIfOp(const Exp& exp) {
 
 void EvaCompiler::genVar(const Exp& exp) {
   const auto name = exp.list[1].string;
-  global->define(name);
   gen(exp.list[2]);
-  emit(to_uint8(OpCode::SetGlobal));
-  emit(global->getGlobalIndex(name));
+  if (isGlobalScope()) {
+    global->define(name);
+    emit(to_uint8(OpCode::SetGlobal));
+    emit(global->getGlobalIndex(name));
+  } else {
+    co->addLocal(name);
+    emit(to_uint8(OpCode::SetLocal));
+    emit(co->getLocalIndex(name));
+  }
 }
 
 void EvaCompiler::genSet(const Exp& exp) {
+  const auto name = exp.list[1].string;
   gen(exp.list[2]);
-  const auto globalIndex = global->getGlobalIndex(exp.list[1].string);
-  if (globalIndex == -1) {
-    throw std::runtime_error("Reference error");
+  const auto localIndex = co->getLocalIndex(name);
+  if (localIndex == -1) {
+    emit(to_uint8(OpCode::SetLocal));
+    emit(localIndex);
+  } else {
+    const auto globalIndex = global->getGlobalIndex(name);
+    if (globalIndex == -1) {
+      throw std::runtime_error("Reference error");
+    }
+    emit(to_uint8(OpCode::SetGlobal));
+    emit(globalIndex);
   }
-  emit(to_uint8(OpCode::SetGlobal));
-  emit(globalIndex);
+}
+
+void EvaCompiler::genBegin(const Exp& exp) {
+  scopeEnter();
+  for (size_t i = 1; i < exp.list.size(); i++) {
+    const bool isLast = (i == (exp.list.size() - 1));
+    const bool isLocalDecl = isDeclaration(exp.list[1]) && !isGlobalScope();
+    gen(exp.list[i]);
+    if (!isLast && !isLocalDecl) {
+      emit(to_uint8(OpCode::Pop));
+    }
+  }
+  scopeExit();
 }
 
 size_t EvaCompiler::getOffset() const { return co->code.size(); }

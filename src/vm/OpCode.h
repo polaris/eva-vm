@@ -15,7 +15,11 @@ enum class OpCode : uint8_t {
   JmpIfFalse = 0x08,
   Jmp = 0x09,
   GetGlobal = 0x0a,
-  SetGlobal = 0x0b
+  SetGlobal = 0x0b,
+  Pop = 0x0c,
+  GetLocal = 0x0d,
+  SetLocal = 0x0e,
+  ScopeExit = 0x0f
 };
 
 inline uint8_t to_uint8(OpCode op) { return static_cast<uint8_t>(op); }
@@ -46,6 +50,14 @@ inline std::string opcodeToString(OpCode opcode) {
       return "GetGlobal";
     case OpCode::SetGlobal:
       return "SetGlobal";
+    case OpCode::Pop:
+      return "Pop";
+    case OpCode::GetLocal:
+      return "GetLocal";
+    case OpCode::SetLocal:
+      return "SetLocal";
+    case OpCode::ScopeExit:
+      return "ScopeExit";
   }
 }
 
